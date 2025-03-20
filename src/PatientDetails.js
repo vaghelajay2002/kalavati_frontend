@@ -4,9 +4,10 @@ import { useParams } from "react-router-dom";
 function PatientDetails() {
   const { id } = useParams();
   const [patient, setPatient] = useState(null);
+  const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
   useEffect(() => {
-    fetch(`http://localhost:5000/patients/${id}`)
+    fetch(`${API_URL}/patients/${id}`)
       .then((res) => res.json())
       .then((data) => setPatient(data))
       .catch((error) => console.error("Error fetching patient:", error));
@@ -20,7 +21,9 @@ function PatientDetails() {
       
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Personal Details</h3>
+        
         <div className="grid grid-cols-2 gap-4 text-gray-700">
+          <p><strong>Uid:</strong> {patient.id}</p>
           <p><strong>Name:</strong> {patient.name}</p>
           <p><strong>Age:</strong> {patient.age}</p>
           <p><strong>Sex:</strong> {patient.sex}</p>

@@ -21,6 +21,7 @@ function AddPatient() {
     hospital_medicines: [],
     discharge_medicines: [],
   });
+  const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
   const [medicineName, setMedicineName] = useState("");
   const [dischargeMedicineName, setDischargeMedicineName] = useState("");
@@ -46,7 +47,7 @@ function AddPatient() {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:5000/medicines/search?query=${query}`);
+      const response = await fetch(`${API_URL}/medicines/search?query=${query}`);
       const data = await response.json();
       type === "hospital" ? setHospitalSuggestions(data) : setDischargeSuggestions(data);
     } catch (error) {
@@ -58,7 +59,7 @@ function AddPatient() {
     if (!selectedMedicine) return;
 
     try {
-      const response = await fetch("http://localhost:5000/medicines", {
+      const response = await fetch(`${API_URL}/medicines`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: selectedMedicine.name }), // Ensure full name is sent
@@ -96,7 +97,7 @@ function AddPatient() {
       discharge_medicines: patient.discharge_medicines.map(med => med.id), // Extract only IDs
     };
     try {
-      const response = await fetch("http://localhost:5000/patients", {
+      const response = await fetch(`${API_URL}/patients`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formattedPatient),
@@ -147,6 +148,16 @@ function AddPatient() {
         <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">🩹 Medical Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+      <label className="form-label">Chief Complaint</label>
+      <textarea 
+        name="chief_complaint" 
+        value={patient.chief_complaint} 
+        onChange={handleInputChange} 
+        className="form-input"
+        required
+      ></textarea>
+    </div>
             <div>
               <label className="form-label">Blood Pressure</label>
               <input type="text" name="bp" value={patient.bp} onChange={handleInputChange} className="form-input" />

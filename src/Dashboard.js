@@ -6,21 +6,26 @@ function Dashboard() {
   const [patients, setPatients] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(10); // Show 10 patients initially
+  const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
   useEffect(() => {
-    fetch("http://localhost:5000/patients")
+    fetch(`${API_URL}/patients`)
       .then((res) => res.json())
       .then((data) => {
         const sortedPatients = data.sort(
           (a, b) => new Date(b.updated_at || b.admit_date) - new Date(a.updated_at || a.admit_date)
         );
-        
-        setPatients(sortedPatients)})
+        console.log("API URL:", process.env.REACT_APP_API_URL);
+        setPatients(sortedPatients);
+      })
       .catch((error) => console.error("Error fetching patients:", error));
   }, []);
 
+  if (!patients) return <p className="text-center text-gray-500 mt-10">Loading...</p>;
+
+  // Search by Patient ID
   const filteredPatients = patients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase())
+    patient.id.toString().toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -39,7 +44,7 @@ function Dashboard() {
       {/* Search Bar */}
       <input
         type="text"
-        placeholder="Search by patient name..."
+        placeholder="Search by Patient ID..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="p-3 border rounded-lg w-full mb-6 shadow-sm focus:ring focus:ring-blue-300"
@@ -47,34 +52,41 @@ function Dashboard() {
 
       {/* Patients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredPatients.slice(0, visibleCount).map((patient, index) => (
-          <div
-            key={patient.id}
-            className="p-6 border rounded-xl shadow-md bg-white transition-transform duration-300 hover:scale-105 hover:shadow-lg"
-          >
-            <h3 className="font-bold text-xl text-blue-600">{patient.name}</h3>
-            <p className="text-gray-700">
-              <strong>Age:</strong> {patient.age}
-            </p>
-            <p className="text-gray-700">
-              <strong>Sex:</strong> {patient.sex}
-            </p>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => navigate(`/patient/${patient.id}`)}
-                className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
-              >
-                View Details
-              </button>
-              <button
-                onClick={() => navigate(`/edit-patient/${patient.id}`)}
-                className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all"
-              >
-                Edit
-              </button>
+        {filteredPatients.length > 0 ? (
+          filteredPatients.slice(0, visibleCount).map((patient) => (
+            <div
+              key={patient.id}
+              className="p-6 border rounded-xl shadow-md bg-white transition-transform duration-300 hover:scale-105 hover:shadow-lg"
+            >
+              <h3 className="font-bold text-xl text-blue-600">{patient.name}</h3>
+              <p className="text-gray-700">
+                <strong>Patient ID:</strong> {patient.id}
+              </p>
+              <p className="text-gray-700">
+                <strong>Age:</strong> {patient.age}
+              </p>
+              <p className="text-gray-700">
+                <strong>Sex:</strong> {patient.sex}
+              </p>
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => navigate(`/patient/${patient.id}`)}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all"
+                >
+                  View Details
+                </button>
+                <button
+                  onClick={() => navigate(`/edit-patient/${patient.id}`)}
+                  className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-all"
+                >
+                  Edit
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="text-center text-gray-500 text-lg col-span-2">No patient found</div>
+        )}
       </div>
 
       {/* Show More Button */}
