@@ -6,6 +6,7 @@ function Dashboard() {
   const [patients, setPatients] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(10); // Show 10 patients initially
+  const [loading, setLoading] = useState(true); // New loading state
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
   useEffect(() => {
@@ -15,13 +16,16 @@ function Dashboard() {
         const sortedPatients = data.sort(
           (a, b) => new Date(b.updated_at || b.admit_date) - new Date(a.updated_at || a.admit_date)
         );
-        console.log("API URL:", process.env.REACT_APP_API_URL);
         setPatients(sortedPatients);
       })
-      .catch((error) => console.error("Error fetching patients:", error));
+      .catch((error) => console.error("Error fetching patients:", error))
+      .finally(() => setLoading(false)); // Set loading to false once API call is complete
   }, []);
 
-  if (!patients) return <p className="text-center text-gray-500 mt-10">Loading...</p>;
+  // Show loading text while fetching data
+  if (loading) {
+    return <p className="text-center text-gray-500 mt-10 text-lg">Loading...</p>;
+  }
 
   // Search by Patient ID
   const filteredPatients = patients.filter((patient) =>
@@ -51,9 +55,9 @@ function Dashboard() {
       />
 
       {/* Patients Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {filteredPatients.length > 0 ? (
-          filteredPatients.slice(0, visibleCount).map((patient) => (
+      {filteredPatients.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {filteredPatients.slice(0, visibleCount).map((patient) => (
             <div
               key={patient.id}
               className="p-6 border rounded-xl shadow-md bg-white transition-transform duration-300 hover:scale-105 hover:shadow-lg"
@@ -83,11 +87,11 @@ function Dashboard() {
                 </button>
               </div>
             </div>
-          ))
-        ) : (
-          <div className="text-center text-gray-500 text-lg col-span-2">No patient found</div>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center text-gray-500 text-lg">No patients found</div>
+      )}
 
       {/* Show More Button */}
       {visibleCount < filteredPatients.length && (
