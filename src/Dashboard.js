@@ -13,9 +13,12 @@ function Dashboard() {
     fetch(`${API_URL}/patients`)
       .then((res) => res.json())
       .then((data) => {
-        const sortedPatients = data.sort(
-          (a, b) => new Date(b.updated_at || b.admit_date) - new Date(a.updated_at || a.admit_date)
-        );
+        const sortedPatients = data.sort((a, b) => {
+
+          return b.id-a.id; // Sort in descending order (LIFO)
+        });
+        console.log(data);
+        
         setPatients(sortedPatients);
       })
       .catch((error) => console.error("Error fetching patients:", error))
@@ -70,7 +73,7 @@ function Dashboard() {
                 <strong>Age:</strong> {patient.age}
               </p>
               <p className="text-gray-700">
-                <strong>Sex:</strong> {patient.sex}
+                <strong>Gender:</strong> {patient.sex}
               </p>
               <div className="mt-4 flex gap-2">
                 <button

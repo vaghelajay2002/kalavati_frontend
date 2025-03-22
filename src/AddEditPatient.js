@@ -9,6 +9,8 @@ function AddPatient() {
     name: "",
     age: "",
     sex: "",
+    mobile: "",
+    address: "",
     admit_date: "",
     discharge_date: "",
     chief_complaint: "",
@@ -21,6 +23,7 @@ function AddPatient() {
     hospital_medicines: [],
     discharge_medicines: [],
   });
+
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
   const [medicineName, setMedicineName] = useState("");
@@ -34,9 +37,13 @@ function AddPatient() {
     const { name, value } = e.target;
     if (name === "admit_date" || name === "discharge_date") {
       const localDate = new Date(value);
-      setPatient((prev) => ({ ...prev, [name]: localDate.toLocaleDateString("en-CA") })); // Ensure local format
+      setPatient((prev) => ({ ...prev, [name]: value })); // Ensure local format
     }
-     else {
+    // else if (name === "mobile") {
+    //   // Allow only numbers and enforce 10-digit limit
+    //   if (!/^\d{0,10}$/.test(value)) return;
+    // }
+    else {
       setPatient((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -103,7 +110,10 @@ function AddPatient() {
         body: JSON.stringify(formattedPatient),
       });
       if (response.ok) {
-        alert("Patient added successfully!");
+        const data = await response.json(); // Assuming backend returns patient object with ID
+      alert(`Patient created successfully with Case No. ${data.id}`);
+        console.log(formattedPatient);
+        
         navigate("/");
       }
     } catch (error) {
@@ -129,17 +139,42 @@ function AddPatient() {
               <input type="number" name="age" value={patient.age} onChange={handleInputChange} className="form-input" required />
             </div>
             <div>
-              <label className="form-label">Sex</label>
+              <label className="form-label">Gender</label>
               <select name="sex" value={patient.sex} onChange={handleInputChange} className="form-input" required>
                 <option value="">Select</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
               </select>
             </div>
+              <div>
+                <label className="form-label">Mobile Number</label>
+                <input
+                  type="text"
+                  name="mobile"
+                  value={patient.mobile}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  required
+                  maxLength="10"
+                  pattern="\d{10}" // Ensures only 10 digits
+                  title="Mobile number must be exactly 10 digits"
+                />
+              </div>
+              <div>
+                <label className="form-label">Address</label>
+                <textarea
+                  name="address"
+                  value={patient.address}
+                  onChange={handleInputChange}
+                  className="form-input"
+                  required
+                ></textarea>
+              </div>
+
             <div>
               <label className="form-label">Admit Date</label>
               <input type="date" name="admit_date" value={patient.admit_date} onChange={handleInputChange} className="form-input" max={new Date().toLocaleDateString("en-CA")}
- required />
+                required />
             </div>
           </div>
         </div>
@@ -148,16 +183,16 @@ function AddPatient() {
         <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">🩹 Medical Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-      <label className="form-label">Chief Complaint</label>
-      <textarea 
-        name="chief_complaint" 
-        value={patient.chief_complaint} 
-        onChange={handleInputChange} 
-        className="form-input"
-        required
-      ></textarea>
-    </div>
+            <div>
+              <label className="form-label">Chief Complaint</label>
+              <textarea
+                name="chief_complaint"
+                value={patient.chief_complaint}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+              ></textarea>
+            </div>
             <div>
               <label className="form-label">Blood Pressure</label>
               <input type="text" name="bp" value={patient.bp} onChange={handleInputChange} className="form-input" />
@@ -186,14 +221,14 @@ function AddPatient() {
           </div>
           <div>
             <label className="form-label">Add Hospital Medicines</label>
-            <MedicineInput 
-            label="Search Hospital Medicine" 
-            medicineName={medicineName} 
-            setMedicineName={setMedicineName} 
-            addMedicine={(selectedMedicine) => addMedicine(selectedMedicine, "hospital")} 
-            suggestions={hospitalSuggestions} 
-            fetchSuggestions={(query) => fetchMedicineSuggestions(query, "hospital")}
-          />
+            <MedicineInput
+              label="Search Hospital Medicine"
+              medicineName={medicineName}
+              setMedicineName={setMedicineName}
+              addMedicine={(selectedMedicine) => addMedicine(selectedMedicine, "hospital")}
+              suggestions={hospitalSuggestions}
+              fetchSuggestions={(query) => fetchMedicineSuggestions(query, "hospital")}
+            />
             <SelectedMedicines medicines={patient.hospital_medicines} />
           </div>
         </div>
@@ -207,14 +242,14 @@ function AddPatient() {
           </div>
           <div>
             <label className="form-label">Add Discharge Medicines</label>
-            <MedicineInput 
-            label="Search Discharge Medicine" 
-            medicineName={dischargeMedicineName} 
-            setMedicineName={setDischargeMedicineName} 
-            addMedicine={(selectedMedicine) => addMedicine(selectedMedicine, "discharge")} 
-            suggestions={dischargeSuggestions} 
-            fetchSuggestions={(query) => fetchMedicineSuggestions(query, "discharge")}
-          />
+            <MedicineInput
+              label="Search Discharge Medicine"
+              medicineName={dischargeMedicineName}
+              setMedicineName={setDischargeMedicineName}
+              addMedicine={(selectedMedicine) => addMedicine(selectedMedicine, "discharge")}
+              suggestions={dischargeSuggestions}
+              fetchSuggestions={(query) => fetchMedicineSuggestions(query, "discharge")}
+            />
             <SelectedMedicines medicines={patient.discharge_medicines} />
           </div>
         </div>
