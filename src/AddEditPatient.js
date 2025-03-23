@@ -35,15 +35,12 @@ function AddPatient() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === "admit_date" || name === "discharge_date") {
-      const localDate = new Date(value);
-      setPatient((prev) => ({ ...prev, [name]: value })); // Ensure local format
-    }
-    // else if (name === "mobile") {
-    //   // Allow only numbers and enforce 10-digit limit
-    //   if (!/^\d{0,10}$/.test(value)) return;
-    // }
-    else {
+    if (name === "mobile") {
+      // Allow only numbers (digits) and enforce 10-digit limit
+      if (/^\d{0,10}$/.test(value)) {
+        setPatient((prev) => ({ ...prev, [name]: value }));
+      }
+    } else {
       setPatient((prev) => ({ ...prev, [name]: value }));
     }
   };
@@ -111,9 +108,9 @@ function AddPatient() {
       });
       if (response.ok) {
         const data = await response.json(); // Assuming backend returns patient object with ID
-      alert(`Patient created successfully with Case No. ${data.id}`);
+        alert(`Patient created successfully with Case No. ${data.id}`);
         console.log(formattedPatient);
-        
+
         navigate("/");
       }
     } catch (error) {
@@ -146,30 +143,31 @@ function AddPatient() {
                 <option value="Female">Female</option>
               </select>
             </div>
-              <div>
-                <label className="form-label">Mobile Number <span className="text-red-500">*</span></label>
-                <input
-                  type="text"
-                  name="mobile"
-                  value={patient.mobile}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                  maxLength="10"
-                  pattern="\d{10}" // Ensures only 10 digits
-                  title="Mobile number must be exactly 10 digits"
-                />
-              </div>
-              <div>
-                <label className="form-label">Address <span className="text-red-500">*</span></label>
-                <textarea
-                  name="address"
-                  value={patient.address}
-                  onChange={handleInputChange}
-                  className="form-input"
-                  required
-                ></textarea>
-              </div>
+            <div>
+              <label className="form-label">Mobile Number <span className="text-red-500">*</span></label>
+              <input
+                type="text"
+                name="mobile"
+                value={patient.mobile}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+                maxLength="10"
+                inputMode="numeric" // Helps mobile users show number keyboard
+                pattern="\d{10}"
+                title="Mobile number must be exactly 10 digits"
+              />
+            </div>
+            <div>
+              <label className="form-label">Address <span className="text-red-500">*</span></label>
+              <textarea
+                name="address"
+                value={patient.address}
+                onChange={handleInputChange}
+                className="form-input"
+                required
+              ></textarea>
+            </div>
 
             <div>
               <label className="form-label">Admit Date <span className="text-red-500">*</span></label>

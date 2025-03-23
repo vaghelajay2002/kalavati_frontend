@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Printer } from "lucide-react";
+import Loading from "./Loading";
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -36,14 +37,11 @@ function Dashboard() {
   };
 
   const handlePrint = (id) => {
-    navigate(`/patient/${id}?print=true`); // Navigate to PatientDetails with a query param
-  setTimeout(() => {
-    window.print();
-  }, 1000); // Wait 1 second before printing
+    navigate(`/patient/${id}?print=true`); // Navigate to PatientDetails with query param
   };
 
   if (loading) {
-    return <p className="text-center text-gray-500 mt-10 text-lg">Loading...</p>;
+    return <Loading />;
   }
 
   const filteredPatients = patients.filter((patient) =>

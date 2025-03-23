@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import Loading from "./Loading";
 
 function PatientDetails() {
   const { id } = useParams();
@@ -10,24 +11,33 @@ function PatientDetails() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    if (queryParams.get("print") === "true") {
-      setTimeout(() => {
-        window.print();
-      }, 5000); // Give time to load data before printing
+    fetch(`${API_URL}/patients/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setPatient(data);
+        const queryParams = new URLSearchParams(location.search);
+        
+        // Print only once after data is fully loaded
+        if (queryParams.get("print") === "true") {
+          setTimeout(() => {
+            window.print();
+          }, 1000); // Allow 1 second for rendering before printing
   
-      // Detect when print dialog is closed, then navigate to home
-      const handleAfterPrint = () => {
-        navigate("/");
-      };
+          // Redirect to home only after print is closed
+          const handleAfterPrint = () => {
+            navigate("/");
+          };
   
-      window.addEventListener("afterprint", handleAfterPrint);
+          window.addEventListener("afterprint", handleAfterPrint);
   
-      return () => {
-        window.removeEventListener("afterprint", handleAfterPrint);
-      };
-    }
-  }, [location.search, navigate]);
+          return () => {
+            window.removeEventListener("afterprint", handleAfterPrint);
+          };
+        }
+      })
+      .catch((error) => console.error("Error fetching patient:", error));
+  }, [id, location.search, navigate]);
+  
   
 
   useEffect(() => {
@@ -37,7 +47,7 @@ function PatientDetails() {
       .catch((error) => console.error("Error fetching patient:", error));
   }, [id]);
 
-  if (!patient) return <p className="text-center text-gray-500 mt-10">Loading...</p>;
+  if (!patient) return <Loading />;
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-gray-100 min-h-screen">
