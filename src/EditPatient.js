@@ -176,15 +176,15 @@ function EditPatient() {
           <h3 className="text-lg font-semibold text-gray-700 mb-4">👤 Personal Details</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="form-label">Full Name</label>
+              <label className="form-label">Full Name <span className="text-red-500">*</span></label>
               <input type="text" name="name" value={patient.name} onChange={handleInputChange} className="form-input" required />
             </div>
             <div>
-              <label className="form-label">Age</label>
+              <label className="form-label">Age <span className="text-red-500">*</span></label>
               <input type="number" name="age" value={patient.age} onChange={handleInputChange} className="form-input" required />
             </div>
             <div>
-              <label className="form-label">Gender</label>
+              <label className="form-label">Gender <span className="text-red-500">*</span></label>
               <select name="sex" value={patient.sex} onChange={handleInputChange} className="form-input" required>
                 <option value="">Select</option>
                 <option value="Male">Male</option>
@@ -192,7 +192,7 @@ function EditPatient() {
               </select>
             </div>
             <div>
-              <label className="form-label">Mobile Number</label>
+              <label className="form-label">Mobile Number <span className="text-red-500">*</span></label>
               <input
                 type="text"
                 name="mobile"
@@ -203,7 +203,7 @@ function EditPatient() {
               />
             </div>
             <div>
-              <label className="form-label">Address</label>
+              <label className="form-label">Address <span className="text-red-500">*</span></label>
               <textarea
                 name="address"
                 value={patient.address}
@@ -214,17 +214,17 @@ function EditPatient() {
             </div>
 
             <div>
-              <label className="form-label">Admit Date</label>
+              <label className="form-label">Admit Date <span className="text-red-500">*</span></label>
               <input type="date" name="admit_date" value={patient.admit_date} onChange={handleInputChange} className="form-input" max={new Date().toLocaleDateString("en-CA")}
                 required />
             </div>
             <div>
-              <label className="form-label">Discharge Date</label>
+              <label className="form-label">Discharge Date <span className="text-red-500">*</span></label>
               <input type="date" name="discharge_date" value={patient.discharge_date} onChange={handleInputChange} min={new Date().toLocaleDateString("en-CA")}
                 className="form-input" />
             </div>
             <div>
-              <label className="form-label">Chief Complaint</label>
+              <label className="form-label">Chief Complaint <span className="text-red-500">*</span></label>
               <input
                 name="chief_complaint"
                 value={patient.chief_complaint}

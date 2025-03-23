@@ -1,10 +1,34 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 function PatientDetails() {
   const { id } = useParams();
   const [patient, setPatient] = useState(null);
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    if (queryParams.get("print") === "true") {
+      setTimeout(() => {
+        window.print();
+      }, 5000); // Give time to load data before printing
+  
+      // Detect when print dialog is closed, then navigate to home
+      const handleAfterPrint = () => {
+        navigate("/");
+      };
+  
+      window.addEventListener("afterprint", handleAfterPrint);
+  
+      return () => {
+        window.removeEventListener("afterprint", handleAfterPrint);
+      };
+    }
+  }, [location.search, navigate]);
+  
 
   useEffect(() => {
     fetch(`${API_URL}/patients/${id}`)
