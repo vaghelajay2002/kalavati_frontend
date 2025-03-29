@@ -23,7 +23,8 @@ function EditPatient() {
     hospital_treatment: "",
     discharge_treatment: "",
   });
-  const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
+
+  const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com";
 
   const [selectedHospitalMedicines, setSelectedHospitalMedicines] = useState([]);
   const [selectedDischargeMedicines, setSelectedDischargeMedicines] = useState([]);
@@ -38,27 +39,31 @@ function EditPatient() {
       .then((data) => {
         setPatient({
           ...data,
-
           admit_date: data.admit_date ? new Date(data.admit_date).toLocaleDateString("en-CA") : "",
           discharge_date: data.discharge_date ? new Date(data.discharge_date).toLocaleDateString("en-CA") : "",
         });
         setSelectedHospitalMedicines(data.hospital_medicines || []);
-        setSelectedDischargeMedicines(data.discharge_medicines || []);
+
+        // Combine hospital + discharge medicines without duplicates
+        const dischargeCombined = [
+          ...(data.discharge_medicines || []),
+          ...(data.hospital_medicines || []).filter(
+            (hMed) => !(data.discharge_medicines || []).some((dMed) => dMed.id === hMed.id)
+          ),
+        ];
+        setSelectedDischargeMedicines(dischargeCombined);
       })
       .catch((error) => console.error("Error fetching patient:", error));
   }, [id]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "admit_date" || name === "discharge_date") {
-      // Convert the selected date to IST (UTC+5:30) manually
       const selectedDate = new Date(value);
-      selectedDate.setMinutes(selectedDate.getMinutes() + selectedDate.getTimezoneOffset() + 330); // 330 minutes = 5:30 hours
-
+      selectedDate.setMinutes(selectedDate.getMinutes() + selectedDate.getTimezoneOffset() + 330);
       setPatient((prev) => ({
         ...prev,
-        [name]: value, // Store YYYY-MM-DD
+        [name]: value,
       }));
     } else {
       setPatient((prev) => ({ ...prev, [name]: value }));
@@ -81,15 +86,11 @@ function EditPatient() {
 
   const addMedicine = async (selectedMedicine, type) => {
     if (!selectedMedicine || !selectedMedicine.name.trim()) return;
-
     try {
       let newMedicine;
-
       if (selectedMedicine.id) {
-        // If a medicine was selected from suggestions, use it directly
         newMedicine = selectedMedicine;
       } else {
-        // Check if the medicine already exists in the database before adding
         const checkRes = await fetch(`${API_URL}/medicines/search?query=${selectedMedicine.name}`);
         const existingMedicines = await checkRes.json();
         const existingMedicine = existingMedicines.find(
@@ -97,21 +98,18 @@ function EditPatient() {
         );
 
         if (existingMedicine) {
-          newMedicine = existingMedicine; // Use existing medicine
+          newMedicine = existingMedicine;
         } else {
-          // If it's a completely new medicine, add it to the database
           const res = await fetch(`${API_URL}/medicines`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ name: selectedMedicine.name }),
           });
-
           if (!res.ok) throw new Error("Failed to add medicine");
           newMedicine = await res.json();
         }
       }
 
-      // Prevent duplicates
       const isDuplicate =
         (type === "hospital" && selectedHospitalMedicines.some((med) => med.id === newMedicine.id)) ||
         (type === "discharge" && selectedDischargeMedicines.some((med) => med.id === newMedicine.id));
@@ -122,33 +120,51 @@ function EditPatient() {
       }
 
       if (type === "hospital") {
-        const updatedHospitalMedicines = [...selectedHospitalMedicines, newMedicine];
-        setSelectedHospitalMedicines(updatedHospitalMedicines);
+        const updated = [...selectedHospitalMedicines, newMedicine];
+        setSelectedHospitalMedicines(updated);
         setPatient((prev) => ({
           ...prev,
-          hospital_medicines: updatedHospitalMedicines.map((med) => med.id),
+          hospital_medicines: updated.map((med) => med.id),
         }));
-        setMedicineName(""); // Clear input field here
-        setHospitalSuggestions([]); // Clear suggestions
+        setMedicineName("");
+        setHospitalSuggestions([]);
       } else {
-        const updatedDischargeMedicines = [...selectedDischargeMedicines, newMedicine];
-        setSelectedDischargeMedicines(updatedDischargeMedicines);
+        const updated = [...selectedDischargeMedicines, newMedicine];
+        setSelectedDischargeMedicines(updated);
         setPatient((prev) => ({
           ...prev,
-          discharge_medicines: updatedDischargeMedicines.map((med) => med.id),
+          discharge_medicines: updated.map((med) => med.id),
         }));
-        setDischargeMedicineName(""); // Clear input field here
-        setDischargeSuggestions([]); // Clear suggestions
+        setDischargeMedicineName("");
+        setDischargeSuggestions([]);
       }
     } catch (error) {
       console.error("Error adding medicine:", error);
     }
   };
 
+  // 🗑️ Delete hospital medicine
+  const handleDeleteHospitalMedicine = (id) => {
+    const updated = selectedHospitalMedicines.filter((med) => med.id !== id);
+    setSelectedHospitalMedicines(updated);
+    setPatient((prev) => ({
+      ...prev,
+      hospital_medicines: updated.map((med) => med.id),
+    }));
+  };
+
+  // 🗑️ Delete discharge medicine
+  const handleDeleteDischargeMedicine = (id) => {
+    const updated = selectedDischargeMedicines.filter((med) => med.id !== id);
+    setSelectedDischargeMedicines(updated);
+    setPatient((prev) => ({
+      ...prev,
+      discharge_medicines: updated.map((med) => med.id),
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
       const updatedPatient = {
         ...patient,
@@ -193,45 +209,23 @@ function EditPatient() {
             </div>
             <div>
               <label className="form-label">Mobile Number <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                name="mobile"
-                value={patient.mobile}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              />
+              <input type="text" name="mobile" value={patient.mobile} onChange={handleInputChange} className="form-input" />
             </div>
             <div>
               <label className="form-label">Address <span className="text-red-500">*</span></label>
-              <textarea
-                name="address"
-                value={patient.address}
-                onChange={handleInputChange}
-                className="form-input"
-                required
-              ></textarea>
+              <textarea name="address" value={patient.address} onChange={handleInputChange} className="form-input" required />
             </div>
-
             <div>
               <label className="form-label">Admit Date <span className="text-red-500">*</span></label>
-              <input type="date" name="admit_date" value={patient.admit_date} onChange={handleInputChange} className="form-input" max={new Date().toLocaleDateString("en-CA")}
-                required />
+              <input type="date" name="admit_date" value={patient.admit_date} onChange={handleInputChange} className="form-input"/>
             </div>
             <div>
               <label className="form-label">Discharge Date <span className="text-red-500">*</span></label>
-              <input type="date" name="discharge_date" value={patient.discharge_date} onChange={handleInputChange} min={new Date().toLocaleDateString("en-CA")}
-                className="form-input" />
+              <input type="date" name="discharge_date" value={patient.discharge_date} onChange={handleInputChange} className="form-input" />
             </div>
             <div>
               <label className="form-label">Chief Complaint <span className="text-red-500">*</span></label>
-              <input
-                name="chief_complaint"
-                value={patient.chief_complaint}
-                onChange={handleInputChange}
-                className="form-input"
-                disabled
-              ></input>
+              <input name="chief_complaint" value={patient.chief_complaint} onChange={handleInputChange} className="form-input" disabled />
             </div>
           </div>
         </div>
@@ -240,7 +234,7 @@ function EditPatient() {
           <h3 className="text-lg font-semibold text-gray-700 mb-4">🏥 Treatment & Medicines</h3>
           <div>
             <label className="form-label">Hospital Treatment</label>
-            <textarea name="hospital_treatment" value={patient.hospital_treatment} onChange={handleInputChange} className="form-input"></textarea>
+            <textarea name="hospital_treatment" value={patient.hospital_treatment} onChange={handleInputChange} className="form-input" />
           </div>
           <MedicineInput
             label="Search Hospital Medicine"
@@ -250,14 +244,14 @@ function EditPatient() {
             suggestions={hospitalSuggestions}
             fetchSuggestions={(query) => fetchMedicineSuggestions(query, "hospital")}
           />
-          <SelectedMedicines medicines={selectedHospitalMedicines} />
+          <SelectedMedicines medicines={selectedHospitalMedicines} handleDelete={handleDeleteHospitalMedicine} />
         </div>
 
         <div className="bg-gray-100 p-6 rounded-lg shadow-sm">
           <h3 className="text-lg font-semibold text-gray-700 mb-4">🏠 Discharge Details</h3>
           <div>
             <label className="form-label">Discharge Treatment</label>
-            <textarea name="discharge_treatment" value={patient.discharge_treatment} onChange={handleInputChange} className="form-input"></textarea>
+            <textarea name="discharge_treatment" value={patient.discharge_treatment} onChange={handleInputChange} className="form-input" />
           </div>
           <MedicineInput
             label="Search Discharge Medicine"
@@ -267,7 +261,7 @@ function EditPatient() {
             suggestions={dischargeSuggestions}
             fetchSuggestions={(query) => fetchMedicineSuggestions(query, "discharge")}
           />
-          <SelectedMedicines medicines={selectedDischargeMedicines} />
+          <SelectedMedicines medicines={selectedDischargeMedicines} handleDelete={handleDeleteDischargeMedicine} />
         </div>
 
         <button type="submit" className="w-full p-3 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600">Update Patient</button>

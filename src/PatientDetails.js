@@ -7,38 +7,6 @@ function PatientDetails() {
   const [patient, setPatient] = useState(null);
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com"; // Fallback URL
 
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    fetch(`${API_URL}/patients/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setPatient(data);
-        const queryParams = new URLSearchParams(location.search);
-        
-        // Print only once after data is fully loaded
-        if (queryParams.get("print") === "true") {
-          setTimeout(() => {
-            window.print();
-          }, 1000); // Allow 1 second for rendering before printing
-  
-          // Redirect to home only after print is closed
-          const handleAfterPrint = () => {
-            navigate("/");
-          };
-  
-          window.addEventListener("afterprint", handleAfterPrint);
-  
-          return () => {
-            window.removeEventListener("afterprint", handleAfterPrint);
-          };
-        }
-      })
-      .catch((error) => console.error("Error fetching patient:", error));
-  }, [id, location.search, navigate]);
-  
-  
 
   useEffect(() => {
     fetch(`${API_URL}/patients/${id}`)

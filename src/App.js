@@ -5,6 +5,9 @@ import AddEditPatient from "./AddEditPatient";
 import EditPatient from "./EditPatient";
 import Login from "./Login";
 import PrivateRoute from "./PrivateRoute";
+import Prescription from "./Prescription"; // or wherever your file is located
+import Bill from "./Bill";
+
 
 function App() {
   return (
@@ -48,6 +51,22 @@ function App() {
             <PrivateRoute>
               <PatientDetails />
             </PrivateRoute>
+          } 
+        />
+        <Route 
+          path="/prescription/:id" 
+          element={
+            <PrivateRoute>
+            <Prescription />
+            </PrivateRoute>  
+          } 
+        />
+        <Route 
+          path="/bill/:id" 
+          element={
+            <PrivateRoute>
+            <Bill />
+            </PrivateRoute>  
           } 
         />
       </Routes>

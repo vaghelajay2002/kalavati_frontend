@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Printer } from "lucide-react";
 import Loading from "./Loading";
 
+
 function Dashboard() {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
@@ -24,16 +25,6 @@ function Dashboard() {
       })
       .catch((error) => console.error("Error fetching patients:", error))
       .finally(() => setLoading(false));
-  };
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this patient?")) {
-      fetch(`${API_URL}/patients/${id}`, { method: "DELETE" })
-        .then(() => {
-          setPatients(patients.filter((patient) => patient.id !== id));
-        })
-        .catch((error) => console.error("Error deleting patient:", error));
-    }
   };
 
   const handlePrint = (id) => {
@@ -77,7 +68,7 @@ function Dashboard() {
             >
               <div className="flex items-center justify-between">
                 <h3 className="font-bold text-xl text-blue-600">{patient.name}</h3>
-                <button onClick={() => handlePrint(patient.id)} className="text-gray-600 hover:text-gray-800">
+                <button onClick={() => navigate(`/bill/${patient.id}`)} className="text-gray-600 hover:text-gray-800">
   <Printer size={20} />
 </button>
               </div>
@@ -104,11 +95,12 @@ function Dashboard() {
                   Edit
                 </button>
                 <button
-                  onClick={() => handleDelete(patient.id)}
-                  className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-all"
-                >
-                  Delete
-                </button>
+  onClick={() => navigate(`/prescription/${patient.id}`)}
+  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-all"
+>
+  Prescription
+</button>
+
               </div>
             </div>
           ))}
