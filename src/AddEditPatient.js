@@ -92,6 +92,14 @@ function AddPatient() {
       console.error("Error adding medicine:", error);
     }
   };
+  const handleDeleteDischargeMedicine = (id) => {
+    const updated = selectedDischargeMedicines.filter((med) => med.id !== id);
+    setSelectedDischargeMedicines(updated);
+    setPatient((prev) => ({
+      ...prev,
+      discharge_medicines: updated.map((med) => med.id),
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -207,6 +215,10 @@ function AddPatient() {
               <label className="form-label">Temperature</label>
               <input type="text" name="temperature" value={patient.temperature} onChange={handleInputChange} className="form-input" />
             </div>
+            <div>
+              <label className="form-label">R/S</label>
+              <input type="text" name="rs" value={patient.rs} onChange={handleInputChange} className="form-input" />
+            </div>
           </div>
         </div>
 
@@ -218,7 +230,7 @@ function AddPatient() {
             <textarea name="hospital_treatment" value={patient.hospital_treatment} onChange={handleInputChange} className="form-input"></textarea>
           </div>
           <div>
-            <label className="form-label">Add Hospital Medicines</label>
+            <label className="form-label">R/X</label>
             <MedicineInput
               label="Search Hospital Medicine"
               medicineName={medicineName}

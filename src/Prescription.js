@@ -54,7 +54,7 @@ function Prescription() {
             <div><strong>SpO2:</strong> {patient.spo2}</div>
             <div><strong>Pulse:</strong> {patient.pulse}</div>
             <div><strong>BP:</strong> {patient.bp}</div>
-            <div><strong>S/E:</strong> {patient.se}</div>
+            <div><strong>R/S:</strong> {patient.rs}</div>
           </div>
 
           <div className="mt-4 text-left">
