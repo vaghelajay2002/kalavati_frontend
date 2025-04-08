@@ -20,16 +20,17 @@ function Dashboard() {
     fetch(`${API_URL}/patients`)
       .then((res) => res.json())
       .then((data) => {
-        const sortedPatients = data.sort((a, b) => b.id - a.id);
+        const sortedPatients = data.sort((a, b) => {
+          const caseA = parseInt(a.case_no) || 0;
+          const caseB = parseInt(b.case_no) || 0;
+          return caseB - caseA;
+        });
         setPatients(sortedPatients);
       })
       .catch((error) => console.error("Error fetching patients:", error))
       .finally(() => setLoading(false));
   };
-
-  const handlePrint = (id) => {
-    navigate(`/patient/${id}?print=true`); // Navigate to PatientDetails with query param
-  };
+  
 
   if (loading) {
     return <Loading />;
@@ -73,7 +74,7 @@ function Dashboard() {
 </button>
               </div>
               <p className="text-gray-700">
-                <strong>Case No.</strong> {patient.id}
+                <strong>Case No.</strong> {patient.case_no || "N/A"}
               </p>
               <p className="text-gray-700">
                 <strong>Age:</strong> {patient.age}

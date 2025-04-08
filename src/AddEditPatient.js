@@ -17,6 +17,7 @@ function AddPatient() {
     bp: "",
     pulse: "",
     spo2: "",
+    rs:"",
     temperature: "",
     hospital_treatment: "",
     discharge_treatment: "",
@@ -92,21 +93,31 @@ function AddPatient() {
       console.error("Error adding medicine:", error);
     }
   };
+  const handleDeleteHospitalMedicine = (id) => {
+    const updated = selectedMedicines.filter((med) => med.id !== id);
+    setSelectedMedicines(updated);
+    setPatient((prev) => ({
+      ...prev,
+      hospital_medicines: updated,
+    }));
+  };
+  
   const handleDeleteDischargeMedicine = (id) => {
     const updated = selectedDischargeMedicines.filter((med) => med.id !== id);
     setSelectedDischargeMedicines(updated);
     setPatient((prev) => ({
       ...prev,
-      discharge_medicines: updated.map((med) => med.id),
+      discharge_medicines: updated,
     }));
   };
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     const formattedPatient = {
       ...patient,
-      hospital_medicines: patient.hospital_medicines.map(med => med.id), // Extract only IDs
-      discharge_medicines: patient.discharge_medicines.map(med => med.id), // Extract only IDs
+      hospital_medicines: selectedMedicines.map(med => med.id),
+discharge_medicines: selectedDischargeMedicines.map(med => med.id),
+
     };
     try {
       const response = await fetch(`${API_URL}/patients`, {
@@ -116,7 +127,7 @@ function AddPatient() {
       });
       if (response.ok) {
         const data = await response.json(); // Assuming backend returns patient object with ID
-        alert(`Patient created successfully with Case No. ${data.id}`);
+        alert(`Patient created successfully with Case No. ${data.case_no}`);
         console.log(formattedPatient);
 
         navigate("/");
@@ -239,7 +250,7 @@ function AddPatient() {
               suggestions={hospitalSuggestions}
               fetchSuggestions={(query) => fetchMedicineSuggestions(query, "hospital")}
             />
-            <SelectedMedicines medicines={patient.hospital_medicines} />
+            <SelectedMedicines medicines={patient.hospital_medicines} handleDelete={handleDeleteHospitalMedicine} />
           </div>
         </div>
 
@@ -260,7 +271,7 @@ function AddPatient() {
               suggestions={dischargeSuggestions}
               fetchSuggestions={(query) => fetchMedicineSuggestions(query, "discharge")}
             />
-            <SelectedMedicines medicines={patient.discharge_medicines} />
+            <SelectedMedicines medicines={patient.discharge_medicines} handleDelete={handleDeleteDischargeMedicine} />
           </div>
         </div>
 

@@ -8,16 +8,38 @@ function Prescription() {
 
   const [patient, setPatient] = useState({});
   const [form, setForm] = useState({ advice: "" });
-  const [medicineList, setMedicineList] = useState([]);
+  const [medicines, setMedicines] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/patients/${id}`)
-      .then((res) => res.json())
-      .then((data) => setPatient(data));
+    const fetchPatientAndMedicines = async () => {
+      try {
+        const res = await fetch(`${API_URL}/patients/${id}`);
+        const data = await res.json();
 
-    fetch(`${API_URL}/medicines`)
-      .then((res) => res.json())
-      .then((data) => setMedicineList(data));
+        const hospitalMedDetails = await Promise.all(
+          (data.hospital_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
+
+        const dischargeMedDetails = await Promise.all(
+          (data.discharge_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
+
+        const allMedicines = [...hospitalMedDetails, ...dischargeMedDetails];
+
+        setPatient(data);
+        setMedicines(allMedicines);
+      } catch (error) {
+        console.error("Error loading prescription data:", error);
+      }
+    };
+
+    fetchPatientAndMedicines();
   }, [id]);
 
   const handleInputChange = (e) => {
@@ -28,9 +50,16 @@ function Prescription() {
     window.print();
   };
 
+  const today = new Date().toLocaleDateString();
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 print:p-0">
-      <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-0">
+      <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4">
+        {/* Date aligned to right */}
+        <div className="flex justify-end mb-4">
+          <p className="text-sm text-gray-600"><strong>Date:</strong> {today}</p>
+        </div>
+
         <div className="space-y-3">
           <p><strong>Name:</strong> {patient.name}</p>
           <p><strong>Age:</strong> {patient.age}</p>
@@ -39,31 +68,35 @@ function Prescription() {
           <div className="mt-4">
             <label className="block font-semibold mb-1">Advice:</label>
             <input
-  type="text"
-  name="advice"
-  placeholder="Write advice..."
-  value={form.advice}
-  onChange={handleInputChange}
-  className="w-full outline-none bg-transparent"
-/>
-
+              type="text"
+              name="advice"
+              placeholder="Write advice..."
+              value={form.advice}
+              onChange={handleInputChange}
+              className="w-full outline-none bg-transparent"
+            />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-4 text-left">
-            <div><strong>Temp:</strong> {patient.temp}</div>
-            <div><strong>SpO2:</strong> {patient.spo2}</div>
-            <div><strong>Pulse:</strong> {patient.pulse}</div>
-            <div><strong>BP:</strong> {patient.bp}</div>
+            <div><strong>Temp:</strong> {patient.temperature} °F</div>
+            <div><strong>SpO2:</strong> {patient.spo2} %</div>
+            <div><strong>Pulse:</strong> {patient.pulse} bpm</div>
+            <div><strong>BP:</strong> {patient.bp} mmg</div>
             <div><strong>R/S:</strong> {patient.rs}</div>
           </div>
 
+          {/* RX Section */}
           <div className="mt-4 text-left">
             <label className="font-semibold block mb-1">RX:</label>
-            <ul className="list-disc pl-6">
-              {medicineList.map((med, index) => (
-                <li key={index}>{med.name}</li>
-              ))}
-            </ul>
+            {medicines.length > 0 ? (
+              <ul className="list-disc pl-6">
+                {medicines.map((med, index) => (
+                  <li key={index}>{med.name}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-gray-500">No medicines added</p>
+            )}
           </div>
         </div>
 

@@ -34,27 +34,50 @@ function EditPatient() {
   const [dischargeSuggestions, setDischargeSuggestions] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_URL}/patients/${id}`)
-      .then((res) => res.json())
-      .then((data) => {
+    const fetchPatientData = async () => {
+      try {
+        const res = await fetch(`${API_URL}/patients/${id}`);
+        const data = await res.json();
+  
         setPatient({
           ...data,
           admit_date: data.admit_date ? new Date(data.admit_date).toLocaleDateString("en-CA") : "",
           discharge_date: data.discharge_date ? new Date(data.discharge_date).toLocaleDateString("en-CA") : "",
         });
-        setSelectedHospitalMedicines(data.hospital_medicines || []);
+  
+        // Fetch full hospital_medicines details
+        const hospitalMedDetails = await Promise.all(
+          (data.hospital_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
+        setSelectedHospitalMedicines(hospitalMedDetails);
+  
+        // Fetch full discharge_medicines details
+        const dischargeMedDetails = await Promise.all(
+          (data.discharge_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
 
-        // Combine hospital + discharge medicines without duplicates
         const dischargeCombined = [
-          ...(data.discharge_medicines || []),
-          ...(data.hospital_medicines || []).filter(
-            (hMed) => !(data.discharge_medicines || []).some((dMed) => dMed.id === hMed.id)
+          ...dischargeMedDetails,
+          ...hospitalMedDetails.filter(
+            (hMed) => !dischargeMedDetails.some((dMed) => dMed.id === hMed.id)
           ),
         ];
+  
         setSelectedDischargeMedicines(dischargeCombined);
-      })
-      .catch((error) => console.error("Error fetching patient:", error));
+      } catch (error) {
+        console.error("Error fetching patient:", error);
+      }
+    };
+  
+    fetchPatientData();
   }, [id]);
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;

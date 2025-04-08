@@ -9,11 +9,41 @@ function PatientDetails() {
 
 
   useEffect(() => {
-    fetch(`${API_URL}/patients/${id}`)
-      .then((res) => res.json())
-      .then((data) => setPatient(data))
-      .catch((error) => console.error("Error fetching patient:", error));
+    const fetchPatientDetails = async () => {
+      try {
+        const res = await fetch(`${API_URL}/patients/${id}`);
+        const data = await res.json();
+  
+        // Fetch hospital medicine names
+        const hospitalMedDetails = await Promise.all(
+          (data.hospital_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
+  
+        // Fetch discharge medicine names
+        const dischargeMedDetails = await Promise.all(
+          (data.discharge_medicines || []).map(async (medId) => {
+            const res = await fetch(`${API_URL}/medicines/${medId}`);
+            return await res.json();
+          })
+        );
+  
+        // Set the patient with medicine details
+        setPatient({
+          ...data,
+          hospital_medicines: hospitalMedDetails,
+          discharge_medicines: dischargeMedDetails,
+        });
+      } catch (error) {
+        console.error("Error fetching patient details:", error);
+      }
+    };
+  
+    fetchPatientDetails();
   }, [id]);
+  
 
   if (!patient) return <Loading />;
 
@@ -66,12 +96,13 @@ function PatientDetails() {
         )}
       </div>
       </div>
-
+        {patient.discharge_treatment && (
       <div className="bg-white shadow-lg rounded-lg p-6 mb-6">
         <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Discharge Treatment</h3>
         <p>{patient.discharge_treatment || "No discharge treatment provided"}</p>
       </div>
-
+      )}
+      {patient.discharge_treatment && (
       <div className="bg-white shadow-lg rounded-lg p-6">
       <h3 className="text-lg font-bold mt-4">Discharge Medicines</h3>
       <div className="bg-white shadow rounded p-4 mt-2">
@@ -86,6 +117,7 @@ function PatientDetails() {
         )}
       </div>
       </div>
+      )}
     </div>
   );
 }
