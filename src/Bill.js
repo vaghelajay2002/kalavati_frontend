@@ -1,17 +1,29 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 
+const fixedCharges = [
+  { label: "Consultation", defaultAmount: 200 },
+  { label: "Followup", defaultAmount: 100 },
+  { label: "RBS", defaultAmount: 50 },
+  { label: "Minor Dressing", defaultAmount: 100 },
+  { label: "Major Dressing", defaultAmount: 200 },
+  { label: "Suturing", defaultAmount: 200 },
+  { label: "Catheter/RT", defaultAmount: 100 },
+  { label: "Gen. Ward Charges", defaultAmount: 500 },
+  { label: "Semi Special Room", defaultAmount: 1000 },
+  { label: "AC Special Room", defaultAmount: 1500 },
+  { label: "Injection Charges", defaultAmount: 100 },
+  { label: "MLC Charges", defaultAmount: 2000 },
+  { label: "Other Charges", defaultAmount: 0 }
+];
+
 function Bill() {
   const { id } = useParams();
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com";
 
   const [patient, setPatient] = useState({});
-  const [charges, setCharges] = useState({
-    consulting: "",
-    stitches: "",
-    injection: "",
-    medicine: ""
-  });
+  const [search, setSearch] = useState("");
+  const [charges, setCharges] = useState([]);
 
   useEffect(() => {
     fetch(`${API_URL}/patients/${id}`)
@@ -19,21 +31,51 @@ function Bill() {
       .then((data) => setPatient(data));
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setCharges({ ...charges, [name]: value });
+  const handleAddCharge = (label, defaultAmount) => {
+    if (!charges.find((c) => c.label === label)) {
+      setCharges([...charges, { label, amount: defaultAmount }]);
+    }
+    setSearch(""); // clear after selection
   };
 
-  const total = Object.values(charges).reduce((acc, val) => acc + Number(val || 0), 0);
+  const handleAmountChange = (index, value) => {
+    if (isNaN(value) || Number(value) < 0) return; // prevent invalid or negative input
+    const updated = [...charges];
+    updated[index].amount = value; // keep as string for display
+    setCharges(updated);
+  };
+  
+  
+
+  const handleDelete = (index) => {
+    const updated = [...charges];
+    updated.splice(index, 1);
+    setCharges(updated);
+  };
+
+  const total = charges.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
   const handlePrint = () => {
+    // Optional: Store total in patient record before printing
+    // fetch(`${API_URL}/patients/${id}/updateTotal`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ total })
+    // });
+
     window.print();
   };
 
+  const filteredCharges = fixedCharges.filter((item) =>
+    item.label.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen flex items-center justify-center p-6 print:p-0">
-      <div className="w-full max-w-2xl bg-white p-6 rounded shadow print:shadow-none print:border-none print:p-0 text-center">
-        <h2 className="text-2xl font-bold mb-6 print:mb-2 print:hidden">Invoice</h2>
+      <div className="w-full max-w-3xl bg-white p-6 rounded shadow print:shadow-none print:border-none print:p-0">
+        <div className="print:text-center print:mb-6">
+          <h1 className="hidden print:block text-2xl font-bold mb-4">Hospital Invoice</h1>
+        </div>
 
         <div className="space-y-2 text-left mb-6">
           <p><strong>Name:</strong> {patient.name}</p>
@@ -41,37 +83,68 @@ function Bill() {
           <p><strong>Gender:</strong> {patient.sex}</p>
         </div>
 
-        {/* Editable Charges (Screen View) */}
-        <div className="space-y-4 text-left print:hidden">
-          {["consulting", "stitches", "injection", "medicine"].map((field) => (
-            <div key={field}>
-              <label className="font-medium capitalize">{field} Charge:</label>
+        <div className="mb-4 print:hidden">
+          <input
+            type="text"
+            placeholder="Search charges..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full p-2 border rounded"
+          />
+          {search && (
+            <ul className="border mt-1 rounded shadow bg-white max-h-40 overflow-auto">
+              {filteredCharges.map((item, idx) => (
+                <li
+                  key={idx}
+                  onClick={() => handleAddCharge(item.label, item.defaultAmount)}
+                  className="p-2 hover:bg-gray-100 cursor-pointer"
+                >
+                  {item.label} - ₹{item.defaultAmount}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        <div className="space-y-4 mb-4 print:hidden">
+          {charges.map((charge, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between gap-4 border-b pb-2"
+            >
+              <span className="flex-1 print:hidden">{charge.label}</span>
               <input
                 type="number"
-                name={field}
-                value={charges[field]}
-                onChange={handleChange}
-                className="w-full border border-gray-300 p-2 rounded"
+                min="0"
+                value={charge.amount}
+                onChange={(e) => handleAmountChange(index, e.target.value)}
+                className="w-28 border p-1 rounded print:hidden"
               />
+
+              <button
+                onClick={() => handleDelete(index)}
+                className="text-red-600 hover:text-red-800 font-bold print:hidden"
+              >
+                ✕
+              </button>
+
             </div>
           ))}
         </div>
 
-        {/* Grid Display (Print View) */}
-        <div className="hidden print:grid grid-cols-2 gap-x-4 gap-y-2 text-left text-lg mt-6">
-          <div><strong>Consulting Charge:</strong></div>
-          <div>Rs. {charges.consulting || 0}</div>
-          <div><strong>Stitches Charge:</strong></div>
-          <div>Rs. {charges.stitches || 0}</div>
-          <div><strong>Injection Charge:</strong></div>
-          <div>Rs. {charges.injection || 0}</div>
-          <div><strong>Medicine Charge:</strong></div>
-          <div>Rs. {charges.medicine || 0}</div>
+        {/* Print View Grid */}
+        <div className="hidden print:block mb-4 text-lg">
+          {charges.map((charge, idx) => (
+            <div className="flex justify-between" key={idx}>
+              <span>{charge.label}</span>
+              <span>₹{charge.amount}</span>
+            </div>
+          ))}
         </div>
 
         {/* Total */}
         <div className="mt-6 text-xl font-bold text-right pr-4">
-          Total: Rs. {total}
+          Total: ₹{total}
         </div>
 
         {/* Signature */}

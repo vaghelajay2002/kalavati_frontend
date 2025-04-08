@@ -55,14 +55,16 @@ function PatientDetails() {
         <h3 className="text-lg font-semibold text-gray-700 border-b pb-2 mb-4">Personal Details</h3>
         
         <div className="grid grid-cols-2 gap-4 text-gray-700">
-          <p><strong>Case id:</strong> {patient.id}</p>
+          <p><strong>Case id:</strong> {patient.case_no}</p>
           <p><strong>Name:</strong> {patient.name}</p>
           <p><strong>Age:</strong> {patient.age}</p>
           <p><strong>Sex:</strong> {patient.sex}</p>
           <p><strong>Mobile:</strong> {patient.mobile}</p>
           <p><strong>Address:</strong> {patient.address}</p>
           <p><strong>Admit Date:</strong> {patient.admit_date.split("T")[0]}</p>
-          <p><strong>Discharge Date:</strong> {patient.discharge_date ? patient.discharge_date.split("T")[0] : "Not Discharged"}</p>
+          {patient.discharge_date && (
+            <p><strong>Discharge Date:</strong> {patient.discharge_date ? patient.discharge_date.split("T")[0] : "Not Discharged"}</p>
+          )}
         </div>
       </div>
 

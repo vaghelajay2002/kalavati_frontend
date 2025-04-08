@@ -53,7 +53,8 @@ function Prescription() {
   const today = new Date().toLocaleDateString();
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 print:p-0">
+    <div className="min-h-screen flex justify-center p-4 pt-20 print:p-0">
+
       <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4">
         {/* Date aligned to right */}
         <div className="flex justify-end mb-4">
@@ -78,11 +79,11 @@ function Prescription() {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-4 text-left">
-            <div><strong>Temp:</strong> {patient.temperature} °F</div>
-            <div><strong>SpO2:</strong> {patient.spo2} %</div>
-            <div><strong>Pulse:</strong> {patient.pulse} bpm</div>
-            <div><strong>BP:</strong> {patient.bp} mmg</div>
-            <div><strong>R/S:</strong> {patient.rs}</div>
+            <div><strong>Temp:</strong> {patient.temperature || "N/A"} °F</div>
+            <div><strong>SpO2:</strong> {patient.spo2 || "N/A"} % </div>
+            <div><strong>Pulse:</strong> {patient.pulse || "N/A"} bpm </div>
+            <div><strong>BP:</strong> {patient.bp || "N/A"} mmg </div>
+            <div><strong>R/S:</strong> {patient.rs || "N/A"} </div>
           </div>
 
           {/* RX Section */}

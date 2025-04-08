@@ -10,7 +10,7 @@ const Loading = () => {
 
           {/* Animated Blue Fill (Bottom to Top) */}
           <motion.div
-            className="absolute inset-0 font-extrabold text-[150px] leading-none text-blue-500 overflow-hidden"
+            className="absolute inset-0 font-extrabold text-[150px] leading-none text-red-500 overflow-hidden"
             initial={{ clipPath: "inset(100% 0% 0% 0%)" }} // Start fully hidden
             animate={{ clipPath: "inset(0% 0% 0% 0%)" }} // Fully visible (filled)
             transition={{ duration: 1.5, ease: "easeInOut", repeat: Infinity, repeatType: "loop" }}
