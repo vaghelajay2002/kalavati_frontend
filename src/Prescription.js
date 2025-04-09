@@ -54,8 +54,7 @@ function Prescription() {
 
   return (
     <div className="min-h-screen flex justify-center p-4 pt-20 print:p-0">
-
-      <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4">
+  <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4 print-margin-top">
         {/* Date aligned to right */}
         <div className="flex justify-end mb-4">
           <p className="text-sm text-gray-600"><strong>Date:</strong> {today}</p>
@@ -66,17 +65,26 @@ function Prescription() {
           <p><strong>Age:</strong> {patient.age}</p>
           <p><strong>Sex:</strong> {patient.sex}</p>
 
-          <div className="mt-4">
-            <label className="block font-semibold mb-1">Advice:</label>
-            <input
-              type="text"
-              name="advice"
-              placeholder="Write advice..."
-              value={form.advice}
-              onChange={handleInputChange}
-              className="w-full outline-none bg-transparent"
-            />
-          </div>
+          {/* Editable Advice input (visible only on screen) */}
+<div className="mt-4 print:hidden">
+  <label className="block font-semibold mb-1">Advice:</label>
+  <input
+    type="text"
+    name="advice"
+    placeholder="Write advice..."
+    value={form.advice}
+    onChange={handleInputChange}
+    className="w-full outline-none bg-transparent border-b"
+  />
+</div>
+
+{/* Print view Advice (visible only when printing) */}
+{form.advice && (
+  <div className="mt-4 hidden print:grid grid-cols-1">
+    <p><strong>Advice:</strong> {form.advice}</p>
+  </div>
+)}
+
 
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-4 text-left">
             <div><strong>Temp:</strong> {patient.temperature || "N/A"} °F</div>

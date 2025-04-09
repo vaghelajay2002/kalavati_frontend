@@ -35,17 +35,15 @@ function Bill() {
     if (!charges.find((c) => c.label === label)) {
       setCharges([...charges, { label, amount: defaultAmount }]);
     }
-    setSearch(""); // clear after selection
+    setSearch("");
   };
 
   const handleAmountChange = (index, value) => {
-    if (isNaN(value) || Number(value) < 0) return; // prevent invalid or negative input
+    if (isNaN(value) || Number(value) < 0) return;
     const updated = [...charges];
-    updated[index].amount = value; // keep as string for display
+    updated[index].amount = value;
     setCharges(updated);
   };
-  
-  
 
   const handleDelete = (index) => {
     const updated = [...charges];
@@ -56,13 +54,6 @@ function Bill() {
   const total = charges.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
   const handlePrint = () => {
-    // Optional: Store total in patient record before printing
-    // fetch(`${API_URL}/patients/${id}/updateTotal`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ total })
-    // });
-
     window.print();
   };
 
@@ -73,16 +64,68 @@ function Bill() {
   return (
     <div className="min-h-screen flex items-center justify-center p-6 print:p-0">
       <div className="w-full max-w-3xl bg-white p-6 rounded shadow print:shadow-none print:border-none print:p-0">
-        <div className="print:text-center print:mb-6">
-          <h1 className="hidden print:block text-2xl font-bold mb-4">Hospital Invoice</h1>
+
+        {/* Print Header */}
+        <div className="hidden print:block mb-6">
+          <div className="flex justify-between">
+            <div className="text-left">
+              <h1 className="text-2xl font-bold">Kalavati Hospital</h1>
+              <p className="text-sm">
+                Bhagyalaxmi Complex, near bus stand, <br />
+                Manjusar, Savali, Vadodara
+              </p>
+            </div>
+            <div className="text-right">
+              <h2 className="text-xl font-bold">HOSPITAL <br />
+                BILL <br />
+                INVOICE</h2>
+              <p className="text-sm mt-2">{new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+
+          <div className="mt-6 flex justify-between">
+            <div>
+              <p><strong>Patient Name:</strong> {patient.name}</p>
+              <p><strong>Age:</strong> {patient.age}</p>
+            </div>
+          </div>
+
+          {/* Charges Table */}
+          <table className="w-full mt-6 border border-collapse">
+            <thead>
+              <tr>
+                <th className="border px-4 py-2 text-left">Charge Description</th>
+                <th className="border px-4 py-2 text-right">Amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {charges.map((charge, idx) => (
+                <tr key={idx}>
+                  <td className="border px-4 py-1">{charge.label}</td>
+                  <td className="border px-4 py-1 text-right">{charge.amount}</td>
+                </tr>
+              ))}
+              <tr>
+                <td className="border px-4 py-2 font-bold">Total</td>
+                <td className="border px-4 py-2 text-right font-bold">₹{total}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          {/* Signature */}
+          <div className="mt-10 text-right pr-4">
+            <p>Signature: __________________</p>
+          </div>
         </div>
 
-        <div className="space-y-2 text-left mb-6">
+        {/* On-screen (non-print) section */}
+        <div className="space-y-2 text-left mb-6 print:hidden">
           <p><strong>Name:</strong> {patient.name}</p>
           <p><strong>Age:</strong> {patient.age}</p>
           <p><strong>Gender:</strong> {patient.sex}</p>
         </div>
 
+        {/* Search Charges */}
         <div className="mb-4 print:hidden">
           <input
             type="text"
@@ -106,50 +149,34 @@ function Bill() {
           )}
         </div>
 
+        {/* Charges List */}
         <div className="space-y-4 mb-4 print:hidden">
           {charges.map((charge, index) => (
             <div
               key={index}
               className="flex items-center justify-between gap-4 border-b pb-2"
             >
-              <span className="flex-1 print:hidden">{charge.label}</span>
+              <span className="flex-1">{charge.label}</span>
               <input
                 type="number"
                 min="0"
                 value={charge.amount}
                 onChange={(e) => handleAmountChange(index, e.target.value)}
-                className="w-28 border p-1 rounded print:hidden"
+                className="w-28 border p-1 rounded"
               />
-
               <button
                 onClick={() => handleDelete(index)}
-                className="text-red-600 hover:text-red-800 font-bold print:hidden"
+                className="text-red-600 hover:text-red-800 font-bold"
               >
                 ✕
               </button>
-
             </div>
           ))}
         </div>
 
-        {/* Print View Grid */}
-        <div className="hidden print:block mb-4 text-lg">
-          {charges.map((charge, idx) => (
-            <div className="flex justify-between" key={idx}>
-              <span>{charge.label}</span>
-              <span>₹{charge.amount}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* Total */}
-        <div className="mt-6 text-xl font-bold text-right pr-4">
+        {/* Show Total (Non-Print) */}
+        <div className="text-right font-semibold text-lg mt-4 mb-6 print:hidden">
           Total: ₹{total}
-        </div>
-
-        {/* Signature */}
-        <div className="mt-10 text-right pr-10">
-          <p>Signature: __________________</p>
         </div>
 
         {/* Buttons */}
