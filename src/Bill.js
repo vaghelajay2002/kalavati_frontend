@@ -17,6 +17,7 @@ const fixedCharges = [
   { label: "Other Charges", defaultAmount: 0 }
 ];
 
+
 function Bill() {
   const { id } = useParams();
   const API_URL = process.env.REACT_APP_API_URL || "https://kalavati-backend.onrender.com";
@@ -54,6 +55,12 @@ function Bill() {
   const total = charges.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
   const handlePrint = () => {
+    // Optional: Store total in patient record before printing
+    // fetch(`${API_URL}/patients/${id}/updateTotal`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ total })
+    // });
     window.print();
   };
 

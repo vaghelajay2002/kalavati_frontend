@@ -248,7 +248,7 @@ function EditPatient() {
             </div>
             <div>
               <label className="form-label">Chief Complaint <span className="text-red-500">*</span></label>
-              <input name="chief_complaint" value={patient.chief_complaint} onChange={handleInputChange} className="form-input" disabled />
+              <input name="chief_complaint" value={patient.chief_complaint} onChange={handleInputChange} className="form-input" />
             </div>
           </div>
         </div>

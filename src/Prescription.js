@@ -63,7 +63,8 @@ function Prescription() {
         <div className="space-y-3">
           <p><strong>Name:</strong> {patient.name}</p>
           <p><strong>Age:</strong> {patient.age}</p>
-          <p><strong>Sex:</strong> {patient.sex}</p>
+          <p><strong>Gender:</strong> {patient.sex}</p>
+          <p><strong>Chief Complaint:</strong> {patient.chief_complaint}</p>
 
           {/* Editable Advice input (visible only on screen) */}
 <div className="mt-4 print:hidden">
