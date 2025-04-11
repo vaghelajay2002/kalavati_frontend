@@ -184,7 +184,6 @@ discharge_medicines: selectedDischargeMedicines.map(med => med.id),
                 value={patient.address}
                 onChange={handleInputChange}
                 className="form-input"
-                required
               ></textarea>
             </div>
 

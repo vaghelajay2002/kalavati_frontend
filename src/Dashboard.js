@@ -37,7 +37,7 @@ function Dashboard() {
   }
 
   const filteredPatients = patients.filter((patient) =>
-    patient.id.toString().toLowerCase().includes(searchQuery.toLowerCase())
+    patient.case_no.toString().toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
