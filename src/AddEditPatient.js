@@ -17,6 +17,7 @@ function AddPatient() {
     bp: "",
     pulse: "",
     spo2: "",
+    sn:"",
     rs:"",
     temperature: "",
     hospital_treatment: "",
@@ -228,6 +229,10 @@ discharge_medicines: selectedDischargeMedicines.map(med => med.id),
             <div>
               <label className="form-label">R/S</label>
               <input type="text" name="rs" value={patient.rs} onChange={handleInputChange} className="form-input" />
+            </div>
+            <div>
+              <label className="form-label">sergical Note</label>
+              <input type="text" name="sn" value={patient.sn} onChange={handleInputChange} className="form-input" />
             </div>
           </div>
         </div>

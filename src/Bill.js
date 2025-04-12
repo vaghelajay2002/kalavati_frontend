@@ -84,7 +84,6 @@ function Bill() {
             </div>
             <div className="text-right">
               <h2 className="text-xl font-bold">HOSPITAL <br />
-                BILL <br />
                 INVOICE</h2>
               <p className="text-sm mt-2">{new Date().toLocaleDateString()}</p>
             </div>

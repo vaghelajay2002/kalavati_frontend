@@ -93,6 +93,7 @@ function Prescription() {
             <div><strong>Pulse:</strong> {patient.pulse || "N/A"} bpm </div>
             <div><strong>BP:</strong> {patient.bp || "N/A"} mmg </div>
             <div><strong>R/S:</strong> {patient.rs || "N/A"} </div>
+            <div><strong>S/N:</strong> {patient.sn || "N/A"} </div>
           </div>
 
           {/* RX Section */}
