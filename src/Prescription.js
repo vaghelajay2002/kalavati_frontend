@@ -10,6 +10,15 @@ function Prescription() {
   const [form, setForm] = useState({ advice: "" });
   const [medicines, setMedicines] = useState([]);
 
+  const [followUpDate, setFollowUpDate] = useState(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 5);
+    return date.toISOString().split("T")[0];
+  });
+
+  const [pastHistory, setPastHistory] = useState("");
+  const [kco, setKco] = useState("");
+
   useEffect(() => {
     const fetchPatientAndMedicines = async () => {
       try {
@@ -54,11 +63,27 @@ function Prescription() {
 
   return (
     <div className="min-h-screen flex justify-center p-4 pt-20 print:p-0">
-  <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4 print-margin-top">
-        {/* Date aligned to right */}
-        <div className="flex justify-end mb-4">
-          <p className="text-sm text-gray-600"><strong>Date:</strong> {today}</p>
-        </div>
+      <div className="max-w-3xl w-full bg-white rounded shadow-md p-6 print:shadow-none print:border-none print:p-4 print-margin-top">
+
+        {/* Date and K/C/O (right aligned) */}
+<div className="mb-4 flex flex-col items-end text-sm text-gray-600 space-y-1">
+  <p><strong>Date:</strong> {today}</p>
+
+  {/* Editable K/C/O input - visible only on screen */}
+  <input
+    type="text"
+    value={kco}
+    onChange={(e) => setKco(e.target.value)}
+    placeholder="K/C/O"
+    className="print:hidden border-b outline-none bg-transparent w-40 text-right"
+  />
+
+  {/* K/C/O shown in print */}
+  {kco && (
+    <p className="hidden print:block"><strong>K/C/O:</strong> {kco}</p>
+  )}
+</div>
+
 
         <div className="space-y-3">
           <p><strong>Name:</strong> {patient.name}</p>
@@ -67,26 +92,26 @@ function Prescription() {
           <p><strong>Chief Complaint:</strong> {patient.chief_complaint}</p>
 
           {/* Editable Advice input (visible only on screen) */}
-<div className="mt-4 print:hidden">
-  <label className="block font-semibold mb-1">Advice:</label>
-  <input
-    type="text"
-    name="advice"
-    placeholder="Write advice..."
-    value={form.advice}
-    onChange={handleInputChange}
-    className="w-full outline-none bg-transparent border-b"
-  />
-</div>
+          <div className="mt-4 print:hidden">
+            <label className="block font-semibold mb-1">Advice:</label>
+            <input
+              type="text"
+              name="advice"
+              placeholder="Write advice..."
+              value={form.advice}
+              onChange={handleInputChange}
+              className="w-full outline-none bg-transparent border-b"
+            />
+          </div>
 
-{/* Print view Advice (visible only when printing) */}
-{form.advice && (
-  <div className="mt-4 hidden print:grid grid-cols-1">
-    <p><strong>Advice:</strong> {form.advice}</p>
-  </div>
-)}
+          {/* Print view Advice (visible only when printing) */}
+          {form.advice && (
+            <div className="mt-4 hidden print:grid grid-cols-1">
+              <p><strong>Advice:</strong> {form.advice}</p>
+            </div>
+          )}
 
-
+          {/* Vitals */}
           <div className="grid grid-cols-2 md:grid-cols-2 gap-4 mt-4 text-left">
             <div><strong>Temp:</strong> {patient.temperature || "N/A"} °F</div>
             <div><strong>SpO2:</strong> {patient.spo2 || "N/A"} % </div>
@@ -109,8 +134,45 @@ function Prescription() {
               <p className="text-gray-500">No medicines added</p>
             )}
           </div>
+
+          {/* Follow Up */}
+          <div className="mt-4 print:hidden">
+            <label className="block font-semibold mb-1">Follow Up:</label>
+            <input
+              type="date"
+              value={followUpDate}
+              onChange={(e) => setFollowUpDate(e.target.value)}
+              className="border-b bg-transparent outline-none print:border-none"
+            />
+          </div>
+          {followUpDate && (
+            <div className="mt-2 hidden print:block">
+              <p><strong>Follow Up:</strong> Next visit on {followUpDate}</p>
+            </div>
+          )}
+
+          {/* Editable Past History input (visible only on screen) */}
+<div className="mt-4 print:hidden">
+  <label className="block font-semibold mb-1">Past History:</label>
+  <input
+    type="text"
+    value={pastHistory}
+    onChange={(e) => setPastHistory(e.target.value)}
+    placeholder="Enter past history"
+    className="w-full outline-none bg-transparent border-b"
+  />
+</div>
+
+{/* Print view of Past History (only visible during print) */}
+{pastHistory && (
+  <div className="mt-4 hidden print:block">
+    <p><strong>Past History:</strong> {pastHistory}</p>
+  </div>
+)}
+
         </div>
 
+        {/* Buttons */}
         <div className="mt-6 flex gap-4 justify-center print:hidden">
           <button
             onClick={handlePrint}

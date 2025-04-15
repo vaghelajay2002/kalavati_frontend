@@ -14,9 +14,8 @@ const fixedCharges = [
   { label: "AC Special Room", defaultAmount: 1500 },
   { label: "Injection Charges", defaultAmount: 100 },
   { label: "MLC Charges", defaultAmount: 2000 },
-  { label: "Other Charges", defaultAmount: 0 }
+  { label: "Other Charges", defaultAmount: null }, // now handled specially
 ];
-
 
 function Bill() {
   const { id } = useParams();
@@ -33,7 +32,9 @@ function Bill() {
   }, [id]);
 
   const handleAddCharge = (label, defaultAmount) => {
-    if (!charges.find((c) => c.label === label)) {
+    if (label === "Other Charges") {
+      setCharges([...charges, { label: "", amount: "", isCustom: true }]);
+    } else if (!charges.find((c) => c.label === label)) {
       setCharges([...charges, { label, amount: defaultAmount }]);
     }
     setSearch("");
@@ -46,6 +47,12 @@ function Bill() {
     setCharges(updated);
   };
 
+  const handleLabelChange = (index, value) => {
+    const updated = [...charges];
+    updated[index].label = value;
+    setCharges(updated);
+  };
+
   const handleDelete = (index) => {
     const updated = [...charges];
     updated.splice(index, 1);
@@ -55,12 +62,6 @@ function Bill() {
   const total = charges.reduce((sum, c) => sum + Number(c.amount || 0), 0);
 
   const handlePrint = () => {
-    // Optional: Store total in patient record before printing
-    // fetch(`${API_URL}/patients/${id}/updateTotal`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ total })
-    // });
     window.print();
   };
 
@@ -83,8 +84,7 @@ function Bill() {
               </p>
             </div>
             <div className="text-right">
-              <h2 className="text-xl font-bold">HOSPITAL <br />
-                INVOICE</h2>
+              <h2 className="text-xl font-bold">HOSPITAL <br /> INVOICE</h2>
               <p className="text-sm mt-2">{new Date().toLocaleDateString()}</p>
             </div>
           </div>
@@ -148,7 +148,7 @@ function Bill() {
                   onClick={() => handleAddCharge(item.label, item.defaultAmount)}
                   className="p-2 hover:bg-gray-100 cursor-pointer"
                 >
-                  {item.label} - ₹{item.defaultAmount}
+                  {item.label} {item.defaultAmount !== null && `- ₹${item.defaultAmount}`}
                 </li>
               ))}
             </ul>
@@ -162,14 +162,36 @@ function Bill() {
               key={index}
               className="flex items-center justify-between gap-4 border-b pb-2"
             >
-              <span className="flex-1">{charge.label}</span>
-              <input
-                type="number"
-                min="0"
-                value={charge.amount}
-                onChange={(e) => handleAmountChange(index, e.target.value)}
-                className="w-28 border p-1 rounded"
-              />
+              {charge.isCustom ? (
+                <>
+                  <input
+                    type="text"
+                    value={charge.label}
+                    onChange={(e) => handleLabelChange(index, e.target.value)}
+                    placeholder="Enter charge name"
+                    className="flex-1 border p-1 rounded"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    value={charge.amount}
+                    onChange={(e) => handleAmountChange(index, e.target.value)}
+                    placeholder="₹"
+                    className="w-28 border p-1 rounded"
+                  />
+                </>
+              ) : (
+                <>
+                  <span className="flex-1">{charge.label}</span>
+                  <input
+                    type="number"
+                    min="0"
+                    value={charge.amount}
+                    onChange={(e) => handleAmountChange(index, e.target.value)}
+                    className="w-28 border p-1 rounded"
+                  />
+                </>
+              )}
               <button
                 onClick={() => handleDelete(index)}
                 className="text-red-600 hover:text-red-800 font-bold"
